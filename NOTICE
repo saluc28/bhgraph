@@ -1,0 +1,26 @@
+bhgraph
+Copyright 2026 saluc28
+
+This product includes software developed by saluc28.
+Licensed under the Apache License, Version 2.0.
+
+---
+
+bhgraph depends on nothing outside the Go standard library and reproduces no
+third-party source code. Two third-party artifacts are present, and both are
+data rather than code.
+
+testdata/golden/mssqlhound-schema.json is internal/bloodhound/schema.json from
+MSSQLHound (github.com/SpecterOps/MSSQLHound, Apache-2.0), redistributed
+unmodified as a test fixture. MSSQLHound ships no NOTICE file of its own. It is
+the only public reference implementation of a BloodHound extension definition
+schema, and the suite round-trips it to check that our types lose no field
+SpecterOps declares.
+
+The fixed signature vectors in client/sign_test.go were produced by executing
+BloodHound's reference implementation of the bhesignature scheme
+(SpecterOps/BloodHound v9.5.1, cmd/api/src/api/signature.go, Apache-2.0) over
+chosen inputs, and recording the resulting digests. The vectors are values, not
+code: no BloodHound source is reproduced or distributed here. The provenance is
+recorded because a test vector whose origin is undocumented looks more
+authoritative than it is.

@@ -1,0 +1,47 @@
+version: "2"
+
+# The linter set is deliberately small. A library this size gains nothing from
+# a wall of style warnings, and a noisy config is one people learn to skip.
+# Everything enabled here can fail a build without argument.
+linters:
+  enable:
+    # Correctness
+    - errcheck # unchecked errors
+    - govet
+    - staticcheck
+    - ineffassign # assignments that are never used
+    - bodyclose # HTTP response bodies that are never closed
+    - errorlint # errors compared with == instead of errors.Is
+    - nilerr # returning nil when err is not nil
+
+    # Clarity
+    - unused
+    - misspell
+    - unconvert # redundant type conversions
+    - wastedassign
+    - copyloopvar
+
+    # Security surface, which this library has more of than most
+    - gosec
+
+  settings:
+    errcheck:
+      check-type-assertions: true
+    gosec:
+      excludes:
+        # G404: weak RNG. Not used here, but if a future example needs sample
+        # data, math/rand is the right tool and this would fire on it.
+        - G404
+
+  exclusions:
+    rules:
+      # Tests deliberately ignore errors on paths whose failure is the point,
+      # and construct inputs that gosec reads as hardcoded credentials.
+      - path: _test\.go
+        linters:
+          - errcheck
+          - gosec
+
+formatters:
+  enable:
+    - gofmt

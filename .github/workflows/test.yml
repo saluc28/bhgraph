@@ -1,0 +1,58 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (Go ${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1.22 is the minimum declared in go.mod, so it has to be tested: it is
+        # the version that decides whether the compatibility claim is true.
+        # stable is what most users will actually be on.
+        go: ["1.22", "1.24", "stable"]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+          # No go.sum will ever exist here, so there is nothing to cache and
+          # setup-go would annotate every run with a failed cache restore.
+          cache: false
+
+      # This library has no dependencies outside the standard library, and that
+      # is a property worth defending rather than assuming: a stray import would
+      # create go.sum and fail this step.
+      - name: Check the dependency-free claim
+        run: |
+          go mod tidy
+          git diff --exit-code go.mod
+          test ! -f go.sum || (echo "go.sum appeared: a dependency was added" && exit 1)
+
+      - name: Check formatting
+        run: |
+          unformatted=$(gofmt -l .)
+          test -z "$unformatted" || (echo "not gofmt-ed:" && echo "$unformatted" && exit 1)
+
+      - name: Build
+        run: go build ./...
+
+      # -race catches data races, -shuffle=on catches tests that only pass in
+      # the order they were written.
+      - name: Test
+        run: go test -race -shuffle=on -coverprofile=coverage.out ./...
+
+      - name: Coverage summary
+        if: matrix.go == 'stable'
+        run: go tool cover -func=coverage.out | tail -n 1

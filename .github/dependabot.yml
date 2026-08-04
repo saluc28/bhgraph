@@ -1,0 +1,14 @@
+version: 2
+updates:
+  # Only GitHub Actions. There is no gomod entry because the library has no
+  # dependencies outside the standard library, and no docker entry because it
+  # produces no images. Adding either would create a config that describes a
+  # project this is not.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels: ["dependencies", "ci"]
+    groups:
+      actions:
+        patterns: ["*"]

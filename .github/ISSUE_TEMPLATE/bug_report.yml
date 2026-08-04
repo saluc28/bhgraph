@@ -1,0 +1,55 @@
+name: Bug report
+description: Something does not work as documented
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: if you get `404 resource not found` from
+        `/api/v2/extensions`, the `opengraph_extension_management` feature flag
+        is probably off. It is off by default. See the README.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: >
+        The smallest code that shows the problem. Please remove your token
+        before pasting anything.
+      render: go
+    validations:
+      required: true
+
+  - type: input
+    id: bhgraph-version
+    attributes:
+      label: bhgraph version
+      placeholder: v0.1.0, or a commit SHA
+    validations:
+      required: true
+
+  - type: input
+    id: go-version
+    attributes:
+      label: Go version
+      placeholder: output of `go version`
+    validations:
+      required: true
+
+  - type: input
+    id: bloodhound-version
+    attributes:
+      label: BloodHound version
+      description: >
+        From `GET /api/version`, if the problem involves talking to a server.
+        This matters more than it looks: the API endpoints this library uses are
+        marked experimental and have changed between releases.
+      placeholder: v9.5.1 community

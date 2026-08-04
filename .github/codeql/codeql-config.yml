@@ -1,0 +1,9 @@
+name: bhgraph CodeQL config
+
+queries:
+  - uses: security-and-quality
+
+paths-ignore:
+  # Examples are written to be read, not to be hardened. Findings there are
+  # noise that would train us to ignore the Security tab.
+  - examples

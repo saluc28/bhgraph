@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security issue
+    url: https://github.com/saluc28/bhgraph/security/advisories/new
+    about: Report privately, not as a public issue. See SECURITY.md.
+  - name: BloodHound itself
+    url: https://github.com/SpecterOps/BloodHound/issues
+    about: For bugs in BloodHound rather than in this library.

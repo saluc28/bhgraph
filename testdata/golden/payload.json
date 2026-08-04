@@ -1,0 +1,81 @@
+{
+  "graph": {
+    "nodes": [
+      {
+        "id": "bhgs-alice",
+        "kinds": [
+          "BHGS_Person"
+        ],
+        "properties": {
+          "displayname": "Alice",
+          "name": "ALICE@BHGRAPH.TEST"
+        }
+      },
+      {
+        "id": "bhgs-team-platform",
+        "kinds": [
+          "BHGS_Team"
+        ],
+        "properties": {
+          "displayname": "Platform",
+          "name": "PLATFORM@BHGRAPH.TEST"
+        }
+      },
+      {
+        "id": "bhgs-repo-infra",
+        "kinds": [
+          "BHGS_Repo"
+        ],
+        "properties": {
+          "displayname": "infra",
+          "name": "INFRA@BHGRAPH.TEST"
+        }
+      },
+      {
+        "id": "bhgs-repo-secret",
+        "kinds": [
+          "BHGS_Repo"
+        ],
+        "properties": {
+          "displayname": "secret",
+          "name": "SECRET@BHGRAPH.TEST"
+        }
+      }
+    ],
+    "edges": [
+      {
+        "kind": "BHGS_MemberOf",
+        "start": {
+          "value": "bhgs-alice",
+          "match_by": "id"
+        },
+        "end": {
+          "value": "bhgs-team-platform",
+          "match_by": "id"
+        }
+      },
+      {
+        "kind": "BHGS_CanWrite",
+        "start": {
+          "value": "bhgs-team-platform",
+          "match_by": "id"
+        },
+        "end": {
+          "value": "bhgs-repo-infra",
+          "match_by": "id"
+        }
+      },
+      {
+        "kind": "BHGS_Watches",
+        "start": {
+          "value": "bhgs-alice",
+          "match_by": "id"
+        },
+        "end": {
+          "value": "bhgs-repo-secret",
+          "match_by": "id"
+        }
+      }
+    ]
+  }
+}
