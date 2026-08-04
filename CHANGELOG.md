@@ -51,9 +51,11 @@ answers `401 signature digest mismatch`. The Python client published with the do
 signs the full URI and agrees with the server. bhgraph follows the server, and the mismatch is
 reported as SpecterOps/BloodHound#3098.
 
-Object ids are uppercased on ingest. The documented list of property values that ingest
+Object ids are uppercased on ingest, in `ConvertGenericNode` on the generic path
+(`convertors.go:36` at v9.5.1). The documented list of property values that ingest
 uppercases does not include the node `id`, so an id reused in its original case answers
-`500 not found`.
+`500 not found`. The `use_raw_object_id` flag would preserve the original case, but it
+ships disabled and is not user updatable.
 
 `/api/v2/extensions` is behind the `opengraph_extension_management` feature flag, which is off
 by default, and with it off the route answers `404`. This one is documented, on the extension
