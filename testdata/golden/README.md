@@ -26,8 +26,8 @@ alice --Watches--> repo-secret                            not traversable
 ## `mssqlhound-schema.json`
 
 `internal/bloodhound/schema.json` from [MSSQLHound](https://github.com/SpecterOps/MSSQLHound),
-SpecterOps' own OpenGraph collector and the only public reference implementation of an
-extension definition schema. Apache-2.0.
+SpecterOps' own OpenGraph collector. The schema comes from the people who define the format,
+which is what makes it worth pinning against. Apache-2.0.
 
 It is here to be round-tripped through our `Extension` types. If SpecterOps declares a field we
 do not model, the re-serialized document loses it and
