@@ -42,15 +42,19 @@ The first release. Everything below is new, so nothing here is a breaking change
 
 ### Notes on BloodHound behaviour
 
-None of these are documented upstream, and each one cost time to diagnose.
+Each of these cost time to diagnose, and they are documented upstream to different degrees.
 
-The signature covers the query string. The server validates against `request.RequestURI`,
-while the client helper BloodHound ships signs `request.URL.Path`. The two agree until a
-request carries a parameter, and then the server answers `401 signature digest mismatch`.
-bhgraph follows the server.
+The signature covers the query string, and BloodHound's own Go helper does not. The server
+validates against `request.RequestURI` while the signing helper in the same repository signs
+`request.URL.Path`. The two agree until a request carries a parameter, and then the server
+answers `401 signature digest mismatch`. The Python client published with the documentation
+signs the full URI and agrees with the server. bhgraph follows the server, and the mismatch is
+reported as SpecterOps/BloodHound#3098.
 
-Object ids are uppercased on ingest, so an id reused in its original case answers
+Object ids are uppercased on ingest. The documented list of property values that ingest
+uppercases does not include the node `id`, so an id reused in its original case answers
 `500 not found`.
 
 `/api/v2/extensions` is behind the `opengraph_extension_management` feature flag, which is off
-by default. With it off the route answers `404`.
+by default, and with it off the route answers `404`. This one is documented, on the extension
+management page, and bhgraph turns the 404 into an error that names the flag.

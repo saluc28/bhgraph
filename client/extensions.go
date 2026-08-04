@@ -22,7 +22,8 @@ const pathExtensions = "/api/v2/extensions"
 // with anything pointing at the cause. Being tagged Community means the
 // endpoint is available in CE, not that it is enabled.
 //
-// Turn it on in the UI under Administration, Feature Management, or with
+// Turn it on in the UI under Administration, then Early Access Features, which
+// is where BloodHound's extension management documentation points, or with
 // PUT /api/v2/features/{id}/toggle after finding the id in GET /api/v2/features.
 const FeatureFlagExtensions = "opengraph_extension_management"
 

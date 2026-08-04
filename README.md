@@ -8,9 +8,10 @@
 Go library for BloodHound structured OpenGraph. It builds payloads, describes extension
 definition schemas, and talks to the API with signed requests.
 
-Only structured graphs take part in the BloodHound UI's pathfinding. No Go library currently
-covers extension definition schemas or the `/api/v2/extensions` endpoint, so a collector that
-wants pathfinding has to write that part itself.
+Only structured graphs take part in the BloodHound UI's pathfinding. No importable Go library
+covers extension definition schemas or the `/api/v2/extensions` endpoint, so every collector
+that wants pathfinding writes that part itself. The ones that have, including SpecterOps'
+own MSSQLHound, keep it under `internal/`, where nobody else can import it.
 
 If all you need is a generic payload,
 [`gopengraph`](https://github.com/TheManticoreProject/gopengraph) already does that well and
@@ -70,29 +71,33 @@ With the flag off the route is not registered at all, so the response is `404 re
 found`. That sends you looking for the mistake in the path, the method, or the signature.
 The Community tag on the endpoint means it exists in CE, not that it is enabled.
 
-Turn it on under Administration, Feature Management. Over the API:
+Turn it on under Administration, then Early Access Features, which is where BloodHound's
+extension management documentation points. Over the API:
 
 ```
 PUT /api/v2/features/{id}/toggle
 ```
 
-after finding the id in `GET /api/v2/features`. This library turns that 404 into an error
-that says so.
+after finding the id in `GET /api/v2/features`. This library turns that 404 into an error that
+names the flag, since the response body does not.
 
-## Undocumented behaviour worth knowing
+## Two behaviours worth knowing
 
-Object ids are uppercased on ingest. A node sent as `alice` is stored as `ALICE`, and reusing
-the id in its original case returns `500 not found`, which reads like a missing node rather
-than a case mismatch. `Graph.UppercaseIDs()` normalizes before the upload so both sides agree.
+The signature covers the query string, and BloodHound's own Go helper does not. The server
+validates against `request.RequestURI`, which includes the query, while the signing helper in
+the same repository signs `request.URL.Path`, which does not. The two agree until a request
+carries a parameter, and then the server answers `401 signature digest mismatch`. The Python
+client published with BloodHound's documentation signs the full URI and agrees with the
+server, so the Go helper is the one that differs. This library follows the server, since the
+server performs the check. Reported as
+[SpecterOps/BloodHound#3098](https://github.com/SpecterOps/BloodHound/issues/3098).
 
-The signature covers the query string. BloodHound's server validates against
-`request.RequestURI`, which includes the query, while the client helper it ships signs
-`request.URL.Path`, which does not. The two agree until a request carries a parameter, and
-then the server answers `401 signature digest mismatch`. This library follows the server,
-since the server performs the check.
-
-Both behaviours were found by testing against a live instance, and neither appears in the
-documentation.
+Object ids are uppercased on ingest, and the documented list of uppercased values does not
+mention it. BloodHound's node rules page lists `name`, `operatingsystem`, `distinguishedname`
+and `environmentid` as property values that ingest uppercases. A node's `id`, which becomes
+its `objectid`, is uppercased too. Reusing that id in its original case returns
+`500 not found`, which reads like a missing node rather than a case mismatch.
+`Graph.UppercaseIDs()` normalizes before the upload so both sides agree.
 
 ## Validation
 

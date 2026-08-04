@@ -44,8 +44,10 @@ const (
 // (cmd/api/src/api/auth.go), which includes the query. The client helper it
 // ships signs request.URL.Path (cmd/api/src/api/signature.go), which does not.
 // For requests without a query the two are identical and nothing shows; add one
-// query parameter and the server answers 401 "signature digest mismatch". We
-// follow the server, because the server is the one doing the checking.
+// query parameter and the server answers 401 "signature digest mismatch". The
+// Python client published with BloodHound's documentation signs the full URI and
+// agrees with the server, so the Go helper is the one that differs. We follow the
+// server, and the mismatch is reported as SpecterOps/BloodHound#3098.
 //
 // A nil body and an empty body produce the same signature: the third digest is
 // computed either way, with nothing written to it.

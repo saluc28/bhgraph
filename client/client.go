@@ -116,7 +116,7 @@ func (e *APIError) Error() string {
 	case e.StatusCode == http.StatusNotFound && strings.HasPrefix(e.Path, pathExtensions):
 		msg += " (a 404 here usually means the " + FeatureFlagExtensions +
 			" feature flag is off, which is the default: with it off the route is not registered at all." +
-			" Enable it under Administration, Feature Management, or via PUT /api/v2/features/{id}/toggle)"
+			" Enable it under Administration, then Early Access Features, or via PUT /api/v2/features/{id}/toggle)"
 	}
 	return msg
 }
