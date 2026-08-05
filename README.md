@@ -95,8 +95,11 @@ server performs the check. Reported as
 Object ids are uppercased on ingest, and the documented list of uppercased values does not
 mention it. BloodHound's node rules page lists `name`, `operatingsystem`, `distinguishedname`
 and `environmentid` as property values that ingest uppercases. A node's `id`, which becomes
-its `objectid`, is uppercased too. Reusing that id in its original case returns
-`500 not found`, which reads like a missing node rather than a case mismatch.
+its `objectid`, is uppercased too, on the generic ingest path in `ConvertGenericNode`
+([`convertors.go:36`](https://github.com/SpecterOps/BloodHound/blob/v9.5.1/cmd/api/src/services/graphify/convertors.go#L36)).
+Reusing that id in its original case returns `500 not found`, which reads like a missing node
+rather than a case mismatch. The `use_raw_object_id` feature flag would keep the original
+case, but it ships disabled and is not user updatable, so on v9.5.1 the uppercasing applies.
 `Graph.UppercaseIDs()` normalizes before the upload so both sides agree.
 
 ## Validation
