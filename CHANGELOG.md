@@ -5,7 +5,7 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - 2026-08-05
+## [0.2.1] - 2026-08-05
 
 ### Added
 
@@ -31,6 +31,10 @@ branches on it (`pathfinding.go:156` at v9.5.1), and with the flag off the serve
 the built-in AD and Azure kinds alone, so a path across the edges of an installed schema comes
 back as `404 path not found`. That reads like an absent path rather than a disabled feature,
 which is the reason `FeatureEnabled` is here.
+
+## [0.2.0] - 2026-08-05
+
+Retracted.
 
 ## [0.1.0] - 2026-08-04
 
