@@ -123,6 +123,27 @@ func ExampleClient_ShortestPath() {
 	fmt.Println(len(path), "bytes of path graph")
 }
 
+// Two feature flags decide whether the rest of this library behaves the way its
+// documentation says, and both are worth checking before blaming the payload.
+// With opengraph_extension_management off, a shortest path across your own edges
+// comes back empty even when the graph is right, because the server answers from
+// the built-in AD and Azure kinds and never looks at an installed schema.
+func ExampleClient_FeatureEnabled() {
+	c, err := client.New("http://127.0.0.1:8080", os.Getenv("BH_TOKEN_ID"), os.Getenv("BH_TOKEN_KEY"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	on, err := c.FeatureEnabled(context.Background(), client.FeatureFlagExtensions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !on {
+		log.Fatalf("turn %s on under Administration, then Early Access Features", client.FeatureFlagExtensions)
+	}
+	fmt.Println("pathfinding will consider the edges of an installed schema")
+}
+
 // WithSpoolThreshold decides where a payload waits while it is signed. The
 // signature covers the body, so the body has to be readable in full before the
 // request goes out; below the threshold that means memory, above it a temporary

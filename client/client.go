@@ -117,6 +117,8 @@ func (e *APIError) Error() string {
 		msg += " (a 404 here usually means the " + FeatureFlagExtensions +
 			" feature flag is off, which is the default: with it off the route is not registered at all." +
 			" Enable it under Administration, then Early Access Features, or via PUT /api/v2/features/{id}/toggle)"
+	case e.StatusCode == http.StatusForbidden && strings.HasPrefix(e.Path, pathFeatures):
+		msg += " (reading feature flags needs a token whose role can read the application configuration)"
 	}
 	return msg
 }
