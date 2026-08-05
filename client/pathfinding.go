@@ -21,7 +21,10 @@ import (
 // traversable".
 //
 // An empty result is a normal answer, not an error: it means no path exists
-// under the constraints given.
+// under the constraints given. It can also mean FeatureFlagExtensions is off,
+// because the server then answers from the built-in AD and Azure kinds and never
+// looks at the edges of an installed schema. Client.FeatureEnabled separates a
+// graph with no path from an instance that cannot see your edges.
 func (c *Client) ShortestPath(ctx context.Context, startID, endID string, onlyTraversable bool) ([]byte, error) {
 	if startID == "" || endID == "" {
 		return nil, fmt.Errorf("bhgraph/client: shortest path needs both a start and an end node id")

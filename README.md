@@ -79,7 +79,15 @@ PUT /api/v2/features/{id}/toggle
 ```
 
 after finding the id in `GET /api/v2/features`. This library turns that 404 into an error that
-names the flag, since the response body does not.
+names the flag, since the response body does not. `Features` and `FeatureEnabled` read that
+endpoint, so a collector can ask instead of inferring the answer from a failure.
+
+The flag governs more than the endpoint. `GetShortestPath` branches on it
+([`pathfinding.go:156`](https://github.com/SpecterOps/BloodHound/blob/v9.5.1/cmd/api/src/api/v2/pathfinding.go#L156)),
+and with the flag off the server answers from the built-in AD and Azure kinds alone, so a path
+across the edges of an installed schema comes back as `404 path not found`. A correct graph and
+a switched off feature give the same answer, which is why asking is worth more than re-reading
+the payload.
 
 ## Two behaviours worth knowing
 

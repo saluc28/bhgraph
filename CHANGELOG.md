@@ -5,6 +5,33 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-08-05
+
+### Added
+
+- `client.Features` and `client.FeatureEnabled`, which read `GET /api/v2/features`. Two flags
+  decide whether the rest of this library behaves the way its documentation says, and reaching
+  them meant fetching and parsing that endpoint by hand.
+- `client.Feature`, the modelled flag, which carries BloodHound's own description of what each
+  one does.
+- `client.FeatureFlagRawObjectIDs` for `use_raw_object_id`, alongside the existing
+  `FeatureFlagExtensions`.
+
+### Changed
+
+- A `403` from the feature flag endpoint now says that the token's role cannot read the
+  application configuration, instead of repeating the bare status.
+- `ShortestPath` documents that an empty result can mean the extension management flag is off
+  rather than that no path exists.
+
+### Notes on BloodHound behaviour
+
+`opengraph_extension_management` governs more than the extensions endpoint. `GetShortestPath`
+branches on it (`pathfinding.go:156` at v9.5.1), and with the flag off the server answers from
+the built-in AD and Azure kinds alone, so a path across the edges of an installed schema comes
+back as `404 path not found`. That reads like an absent path rather than a disabled feature,
+which is the reason `FeatureEnabled` is here.
+
 ## [0.1.0] - 2026-08-04
 
 The first release. Everything below is new, so nothing here is a breaking change.
