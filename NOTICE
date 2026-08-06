@@ -12,10 +12,9 @@ data rather than code.
 
 testdata/golden/mssqlhound-schema.json is internal/bloodhound/schema.json from
 MSSQLHound (github.com/SpecterOps/MSSQLHound, Apache-2.0), redistributed
-unmodified as a test fixture. MSSQLHound ships no NOTICE file of its own. It is
-the only public reference implementation of a BloodHound extension definition
-schema, and the suite round-trips it to check that our types lose no field
-SpecterOps declares.
+unmodified as a test fixture. MSSQLHound ships no NOTICE file of its own. The
+schema comes from the people who define the format, and the suite round-trips it
+to check that our types lose no field SpecterOps declares.
 
 The fixed signature vectors in client/sign_test.go were produced by executing
 BloodHound's reference implementation of the bhesignature scheme
