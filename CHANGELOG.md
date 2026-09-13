@@ -5,6 +5,18 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2026-09-13
+
+### Fixed
+
+- `Extension.Validate` checks the namespace the way BloodHound does: every kind name must start
+  with the namespace followed by an underscore (`cmd/api/src/model/graphschema.go:508` at
+  v9.7.0, and the same check in every release since v8.7.0). A namespace declared with the
+  underscore already in it, such as `PTD_` for `PTD_Principal`, used to pass here and is
+  refused by the server.
+- The environment kind is held to the same rule, and a kind name with nothing after the prefix
+  is refused.
+
 ## [0.2.1] - 2026-08-06
 
 ### Added

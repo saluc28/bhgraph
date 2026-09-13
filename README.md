@@ -118,7 +118,8 @@ anything is sent, and report every problem rather than stopping at the first:
 
 - nodes have a non-empty id, at least one kind, and no duplicate ids
 - edges have a kind, and id-matched endpoints exist among the nodes in the payload
-- kind names carry the namespace declared by the schema
+- kind names start with the schema's namespace followed by an underscore, the check BloodHound
+  applies when the schema is installed
 - every kind used in the payload is declared in the schema
 
 The last check matters more than it looks. An undeclared kind is accepted by the ingest

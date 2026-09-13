@@ -79,8 +79,8 @@ func TestMSSQLHoundSchemaShape(t *testing.T) {
 		t.Error("the reference schema declares a namespace; we failed to read it")
 	}
 
-	// Every kind name carries the namespace: this is where the convention our
-	// own Validate enforces actually comes from.
+	// Every kind name starts with the namespace and an underscore, the rule
+	// BloodHound applies on install, so SpecterOps' own schema has to pass.
 	if err := e.Validate(); err != nil {
 		t.Errorf("SpecterOps' own schema does not pass our validation, so our rules are too strict: %v", err)
 	}

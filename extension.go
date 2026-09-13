@@ -17,9 +17,10 @@ type Extension struct {
 
 // SchemaMeta identifies the extension.
 //
-// Namespace is the prefix every kind name is expected to carry, following the
-// convention SpecterOps uses in its own collectors (MSSQL_Database,
-// MSSQL_AddMember). Validate enforces it.
+// Namespace is declared without the underscore that joins it to each kind name:
+// MSSQL, for kinds such as MSSQL_Database and MSSQL_AddMember. BloodHound adds
+// the underscore itself when it checks the kind names, so MSSQL_ would make it
+// look for MSSQL__Database. Validate applies the same check.
 type SchemaMeta struct {
 	Name        string `json:"name"`
 	DisplayName string `json:"display_name"`

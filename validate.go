@@ -95,11 +95,12 @@ func (g Graph) validate(v *ValidationError) {
 
 // Validate reports problems in the extension schema itself.
 //
-// Every kind name must carry the declared namespace as a prefix. That is a
-// convention rather than a server-side requirement, but it is the convention
-// SpecterOps follows in its own collectors, and kind names end up both in
-// ingested data and in saved Cypher queries: renaming them later means
-// re-ingesting everything.
+// Every kind name, the environment kind included, must start with the declared
+// namespace followed by an underscore, and something must follow that prefix.
+// BloodHound appends the underscore itself and refuses the schema if a single
+// kind does not match (cmd/api/src/model/graphschema.go:508 at v9.7.0). A
+// namespace declared as MSSQL_ therefore fails on install even though every
+// kind name visibly starts with it: the server looks for MSSQL__Database.
 func (e Extension) Validate() error {
 	v := &ValidationError{}
 
@@ -118,6 +119,19 @@ func (e Extension) Validate() error {
 		v.add("schema: no node kinds declared")
 	}
 
+	checkNamespace := func(what, name string) {
+		if ns == "" {
+			return
+		}
+		rest, found := strings.CutPrefix(name, ns+"_")
+		switch {
+		case !found:
+			v.add("%s %q: does not carry the declared namespace %q followed by an underscore", what, name, ns)
+		case strings.TrimSpace(rest) == "":
+			v.add("%s %q: nothing follows the namespace prefix", what, name)
+		}
+	}
+
 	// Node kinds and relationship kinds share one set of names on purpose: a
 	// name that meant two things would be ambiguous in a saved Cypher query.
 	seen := map[string]bool{}
@@ -130,9 +144,7 @@ func (e Extension) Validate() error {
 			v.add("%s: duplicate kind name %q", what, name)
 		}
 		seen[name] = true
-		if ns != "" && !strings.HasPrefix(name, ns) {
-			v.add("%s %q: does not carry the declared namespace %q", what, name, ns)
-		}
+		checkNamespace(what, name)
 	}
 
 	displayKinds := 0
@@ -154,6 +166,8 @@ func (e Extension) Validate() error {
 	for i, env := range e.Environments {
 		if env.EnvironmentKind == "" {
 			v.add("environment %d: empty environment_kind", i)
+		} else {
+			checkNamespace(fmt.Sprintf("environment %d: environment_kind", i), env.EnvironmentKind)
 		}
 		if len(env.PrincipalKinds) == 0 {
 			v.add("environment %d: no principal kinds", i)

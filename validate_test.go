@@ -180,9 +180,8 @@ func TestExtensionValidate(t *testing.T) {
 			wantErr: "no node kinds",
 		},
 		{
-			// Kind names end up in ingested data AND in saved Cypher queries.
-			// Renaming later means re-ingesting everything, so the namespace is
-			// enforced at the only moment it is still cheap.
+			// BloodHound refuses a schema over a single kind outside the
+			// namespace, and names only the first one it finds.
 			name:    "node kind outside the declared namespace",
 			mutate:  func(e *Extension) { e.NodeKinds[0].Name = "Person" },
 			wantErr: "does not carry the declared namespace",
@@ -191,6 +190,28 @@ func TestExtensionValidate(t *testing.T) {
 			name:    "relationship kind outside the declared namespace",
 			mutate:  func(e *Extension) { e.RelationshipKinds[0].Name = "CanWrite" },
 			wantErr: "does not carry the declared namespace",
+		},
+		{
+			// The server appends the underscore to the namespace, so a namespace
+			// that already ends with one makes it look for TST__Person.
+			name:    "namespace declared with the underscore",
+			mutate:  func(e *Extension) { e.Schema.Namespace = "TST_" },
+			wantErr: `does not carry the declared namespace "TST_" followed by an underscore`,
+		},
+		{
+			name:    "kind that starts with the namespace but not the underscore",
+			mutate:  func(e *Extension) { e.RelationshipKinds[0].Name = "TSTCanWrite" },
+			wantErr: "does not carry the declared namespace",
+		},
+		{
+			name:    "kind with nothing after the namespace prefix",
+			mutate:  func(e *Extension) { e.RelationshipKinds[0].Name = "TST_" },
+			wantErr: "nothing follows the namespace prefix",
+		},
+		{
+			name:    "environment kind outside the declared namespace",
+			mutate:  func(e *Extension) { e.Environments[0].EnvironmentKind = "Person" },
+			wantErr: `environment_kind "Person": does not carry the declared namespace`,
 		},
 		{
 			name: "duplicate kind name",
