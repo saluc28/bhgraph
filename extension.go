@@ -39,6 +39,10 @@ type NodeKind struct {
 	IsDisplayKind bool   `json:"is_display_kind"`
 	Icon          string `json:"icon"`
 	Color         string `json:"color"`
+
+	// Info is what BloodHound shows in the Entity Panel for a node of this
+	// kind, next to its properties, keyed by section. See KindInfo.
+	Info map[string]KindInfo `json:"info,omitempty"`
 }
 
 // RelationshipKind declares one edge type.
@@ -50,6 +54,37 @@ type RelationshipKind struct {
 	Name          string `json:"name"`
 	Description   string `json:"description"`
 	IsTraversable bool   `json:"is_traversable"`
+
+	// Info is what BloodHound shows in the Entity Panel for a relationship of
+	// this kind, keyed by section. See KindInfo.
+	Info map[string]KindInfo `json:"info,omitempty"`
+}
+
+// KindInfo is one section of the Entity Panel, the panel BloodHound opens on
+// the node or relationship selected in Explore. It is where an extension says
+// what a kind means, how it is abused and how it is closed, in the place the
+// analyst is already looking.
+//
+// The section is keyed in the Info map by an identifier made of lowercase
+// letters, digits, hyphens and underscores, which a later version of the schema
+// uses to update the same section, so it should not change. The panel starts
+// with the properties at position 0, and the sections of an extension follow in
+// the order of Position; BloodHound's documentation numbers them from 1.
+//
+// Markdown.Content is Markdown, and it is also a Go text/template evaluated for
+// the selected entity: {{ .Properties.name }} for a node, and
+// {{ .Source.Properties.name }} and {{ .Target.Properties.name }} for the two
+// ends of a relationship. BloodHound reads Info from v9.5.0, and evaluates the
+// content as a template from v9.7.0.
+type KindInfo struct {
+	Title    string           `json:"title"`
+	Position int              `json:"position"`
+	Markdown KindInfoMarkdown `json:"markdown"`
+}
+
+// KindInfoMarkdown holds the content of one Entity Panel section.
+type KindInfoMarkdown struct {
+	Content string `json:"content"`
 }
 
 // Environment scopes findings and risk metrics to a set of principal kinds.

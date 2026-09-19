@@ -2,6 +2,7 @@ package bhgraph
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -234,6 +235,73 @@ func TestExtensionValidate(t *testing.T) {
 			name:    "environment with no principal kinds",
 			mutate:  func(e *Extension) { e.Environments[0].PrincipalKinds = nil },
 			wantErr: "no principal kinds",
+		},
+		{
+			// A function the Go template package does not know, default among
+			// them, is BloodHound's to accept or refuse, not ours.
+			name: "entity panel sections that use templates",
+			mutate: func(e *Extension) {
+				e.NodeKinds[0].Info = map[string]KindInfo{
+					"overview": {Title: "Overview", Position: 1, Markdown: KindInfoMarkdown{
+						Content: `# {{ .Properties.name | default "Unknown" }}`,
+					}},
+				}
+				e.RelationshipKinds[0].Info = map[string]KindInfo{
+					"abuse": {Title: "Abuse", Position: 1, Markdown: KindInfoMarkdown{
+						Content: "{{ .Source.Properties.name }} can write {{ .Target.Properties.name }}.",
+					}},
+				}
+			},
+		},
+		{
+			name: "entity panel section key outside the allowed characters",
+			mutate: func(e *Extension) {
+				e.NodeKinds[0].Info = map[string]KindInfo{"Overview": {Title: "Overview", Position: 1}}
+			},
+			wantErr: `info key "Overview" does not match`,
+		},
+		{
+			name: "entity panel section with no title",
+			mutate: func(e *Extension) {
+				e.RelationshipKinds[0].Info = map[string]KindInfo{"abuse": {Title: "  ", Position: 1}}
+			},
+			wantErr: `info "abuse" has no title`,
+		},
+		{
+			name: "entity panel section at a negative position",
+			mutate: func(e *Extension) {
+				e.NodeKinds[0].Info = map[string]KindInfo{"overview": {Title: "Overview", Position: -1}}
+			},
+			wantErr: "position -1",
+		},
+		{
+			name: "two entity panel sections at the same position",
+			mutate: func(e *Extension) {
+				e.NodeKinds[0].Info = map[string]KindInfo{
+					"abuse":    {Title: "Abuse", Position: 1},
+					"overview": {Title: "Overview", Position: 1},
+				}
+			},
+			wantErr: `info "abuse" and "overview" share position 1`,
+		},
+		{
+			name: "entity panel section that is not a template",
+			mutate: func(e *Extension) {
+				e.NodeKinds[0].Info = map[string]KindInfo{
+					"overview": {Title: "Overview", Position: 1, Markdown: KindInfoMarkdown{Content: "{{ .Properties.name "}},
+				}
+			},
+			wantErr: `info "overview" is not a template BloodHound can parse`,
+		},
+		{
+			name: "more entity panel sections than BloodHound takes",
+			mutate: func(e *Extension) {
+				e.NodeKinds[0].Info = map[string]KindInfo{}
+				for i := range 101 {
+					e.NodeKinds[0].Info[fmt.Sprintf("section-%d", i)] = KindInfo{Title: "Section", Position: i + 1}
+				}
+			},
+			wantErr: "101 info sections",
 		},
 	}
 

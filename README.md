@@ -120,6 +120,8 @@ anything is sent, and report every problem rather than stopping at the first:
 - edges have a kind, and id-matched endpoints exist among the nodes in the payload
 - kind names start with the schema's namespace followed by an underscore, the check BloodHound
   applies when the schema is installed
+- the Entity Panel sections a kind declares in `Info` follow the rules the server applies on
+  install, and their content parses as a Go template
 - every kind used in the payload is declared in the schema
 
 The last check matters more than it looks. An undeclared kind is accepted by the ingest

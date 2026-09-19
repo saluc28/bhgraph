@@ -5,6 +5,19 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-09-19
+
+### Added
+
+- `NodeKind.Info` and `RelationshipKind.Info`, with `KindInfo` and `KindInfoMarkdown`: the
+  sections BloodHound shows in the Entity Panel for a kind, read from v9.5.0 and evaluated as Go
+  templates from v9.7.0.
+- `Extension.Validate` checks those sections the way BloodHound does: at most 100 per kind, keys
+  of lowercase letters, digits, hyphens and underscores, a title, a position of 0 or more that no
+  other section of the kind uses, and content that parses as a template
+  (`cmd/api/src/model/graphschema.go:163` at v9.7.0). Which template functions exist is left to
+  the server.
+
 ## [0.2.2] - 2026-09-13
 
 ### Fixed

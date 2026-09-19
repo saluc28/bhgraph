@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -83,6 +84,61 @@ func TestMSSQLHoundSchemaShape(t *testing.T) {
 	// BloodHound applies on install, so SpecterOps' own schema has to pass.
 	if err := e.Validate(); err != nil {
 		t.Errorf("SpecterOps' own schema does not pass our validation, so our rules are too strict: %v", err)
+	}
+}
+
+// The Entity Panel section of BloodHound's own documentation, as the extension
+// definition schema carries it (docs/opengraph/developer/entity-panel-content.mdx
+// in SpecterOps/bloodhound-docs), round-trips through a node kind unchanged. The
+// field is left out of a kind that has no sections, so a schema written before
+// it existed marshals the way it always did.
+func TestKindInfoRoundTripsTheDocumentedShape(t *testing.T) {
+	const documented = `{
+		"name": "TST_Person",
+		"display_name": "Person",
+		"description": "",
+		"is_display_kind": true,
+		"icon": "user",
+		"color": "#ffffff",
+		"info": {
+			"overview": {
+				"title": "Overview",
+				"position": 1,
+				"markdown": {"content": "This content appears in the Entity Panel."}
+			}
+		}
+	}`
+
+	var kind NodeKind
+	if err := json.Unmarshal([]byte(documented), &kind); err != nil {
+		t.Fatalf("our types cannot parse the documented section: %v", err)
+	}
+	section := kind.Info["overview"]
+	if section.Title != "Overview" || section.Position != 1 || section.Markdown.Content != "This content appears in the Entity Panel." {
+		t.Errorf("section = %+v, want the documented one", section)
+	}
+
+	reserialized, err := json.Marshal(kind)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var want, got map[string]any
+	if err := json.Unmarshal([]byte(documented), &want); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(reserialized, &got); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("the documented section does not survive a round trip\n want: %v\n  got: %v", want, got)
+	}
+
+	plain, err := json.Marshal(RelationshipKind{Name: "TST_CanWrite"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(plain), `"info"`) {
+		t.Errorf("a kind with no sections carries an info field: %s", plain)
 	}
 }
 

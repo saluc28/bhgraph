@@ -2,7 +2,10 @@ package bhgraph
 
 import (
 	"fmt"
+	"regexp"
+	"sort"
 	"strings"
+	"text/template/parse"
 )
 
 // ValidationError collects everything wrong with a graph or a schema, rather
@@ -150,6 +153,7 @@ func (e Extension) Validate() error {
 	displayKinds := 0
 	for _, nk := range e.NodeKinds {
 		checkName("node kind", nk.Name)
+		validateInfo(v, fmt.Sprintf("node kind %q", nk.Name), nk.Info)
 		if nk.IsDisplayKind {
 			displayKinds++
 		}
@@ -160,6 +164,7 @@ func (e Extension) Validate() error {
 
 	for _, rk := range e.RelationshipKinds {
 		checkName("relationship kind", rk.Name)
+		validateInfo(v, fmt.Sprintf("relationship kind %q", rk.Name), rk.Info)
 	}
 
 	declared := e.declaredNodeKinds()
@@ -180,6 +185,67 @@ func (e Extension) Validate() error {
 	}
 
 	return v.orNil()
+}
+
+// infoKey is the form BloodHound holds an Entity Panel section key to, and
+// maxInfo the most sections it takes for one kind
+// (cmd/api/src/model/graphschema.go:85 and 164 at v9.7.0).
+var infoKey = regexp.MustCompile(`^[a-z0-9_-]{1,128}$`)
+
+const maxInfo = 100
+
+// validateInfo reports what BloodHound would refuse in the Entity Panel
+// sections of one kind (validateKindInfo, cmd/api/src/model/graphschema.go:163
+// at v9.7.0): too many of them, a key it does not accept, a blank title, a
+// negative position, two sections at the same position, and content that is
+// not a template it can parse.
+//
+// The template is parsed without knowing its functions. BloodHound offers the
+// hermetic set of the sprig library less a few, and reproducing that list here
+// would take sprig as a dependency, so a template that calls a function the
+// server does not offer passes here and is refused on upload. So is Markdown
+// holding HTML the server does not allow, which it checks and this does not.
+func validateInfo(v *ValidationError, kind string, info map[string]KindInfo) {
+	if len(info) > maxInfo {
+		v.add("%s: %d info sections, and BloodHound takes at most %d", kind, len(info), maxInfo)
+	}
+
+	keys := make([]string, 0, len(info))
+	for key := range info {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	positions := make(map[int]string, len(info))
+	for _, key := range keys {
+		section := info[key]
+		if !infoKey.MatchString(key) {
+			v.add("%s: info key %q does not match %s", kind, key, infoKey)
+		}
+		if strings.TrimSpace(section.Title) == "" {
+			v.add("%s: info %q has no title", kind, key)
+		}
+		switch other, taken := positions[section.Position]; {
+		case section.Position < 0:
+			v.add("%s: info %q at position %d, and positions start at 0", kind, key, section.Position)
+		case taken:
+			v.add("%s: info %q and %q share position %d", kind, other, key, section.Position)
+		default:
+			positions[section.Position] = key
+		}
+		if err := parseTemplate(section.Markdown.Content); err != nil {
+			v.add("%s: info %q is not a template BloodHound can parse: %v", kind, key, err)
+		}
+	}
+}
+
+// parseTemplate parses the content of a section as text/template does, with
+// the check that every function is defined left out.
+func parseTemplate(content string) error {
+	tree := parse.New("info")
+	tree.Mode = parse.SkipFuncCheck
+	_, err := tree.Parse(content, "", "", map[string]*parse.Tree{})
+	return err
 }
 
 // ValidateAgainst checks the graph against a schema, on top of the structural
