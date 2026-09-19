@@ -170,7 +170,7 @@ it the same way.
 
 ## Status
 
-v0.1.0, a v0 release: the API can still change, and the CHANGELOG says when it does.
+A v0 release: the API can still change, and the CHANGELOG says when it does.
 
 Everything described above is implemented and tested. That includes a round trip of
 MSSQLHound's own `schema.json` through the `Extension` types, which is the check that would
