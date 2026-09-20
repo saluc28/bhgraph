@@ -105,6 +105,10 @@ func TestRequestsAreSignedTheWayTheServerChecks(t *testing.T) {
 			_, err := c.Put(context.Background(), "/api/v2/features/1/toggle", []byte(`{}`))
 			return err
 		}},
+		{"DELETE without body", func(c *Client) error {
+			_, err := c.Delete(context.Background(), "/api/v2/saved-queries/7")
+			return err
+		}},
 		{
 			// The case that broke against a real server: the signature must
 			// cover the query string.
@@ -154,6 +158,10 @@ func TestContentTypeFollowsTheBody(t *testing.T) {
 			_, err := c.Put(context.Background(), "/api/v2/extensions", []byte(`{}`))
 			return err
 		}, "application/json"},
+		{"DELETE has no body and no content type", func(c *Client) error {
+			_, err := c.Delete(context.Background(), "/api/v2/saved-queries/7")
+			return err
+		}, ""},
 		{"Cypher is JSON", func(c *Client) error {
 			_, err := c.Cypher(context.Background(), "MATCH (n) RETURN n")
 			return err
@@ -360,6 +368,32 @@ func TestInstallExtensionRefusesAnInvalidSchema(t *testing.T) {
 	}
 	if called {
 		t.Error("the server was contacted despite the schema being invalid")
+	}
+}
+
+// A delete sent as anything else answers 200 or 405 and removes nothing, and a
+// caller that only looks at the error reads that as done. The verb and the path
+// are pinned, and a 204 with no body is a success rather than a short read.
+func TestDeleteUsesDELETEAndAcceptsAnEmptyBody(t *testing.T) {
+	var method, path string
+	c, _ := newTestClient(t, func(w http.ResponseWriter, r *http.Request) {
+		verifyLikeBloodHound(t, r)
+		method, path = r.Method, r.URL.Path
+		w.WriteHeader(http.StatusNoContent)
+	})
+
+	body, err := c.Delete(context.Background(), "/api/v2/saved-queries/7")
+	if err != nil {
+		t.Fatalf("Delete() error = %v", err)
+	}
+	if len(body) != 0 {
+		t.Errorf("body = %q, want nothing", body)
+	}
+	if method != http.MethodDelete {
+		t.Errorf("expected DELETE, got %s", method)
+	}
+	if path != "/api/v2/saved-queries/7" {
+		t.Errorf("unexpected path %q", path)
 	}
 }
 

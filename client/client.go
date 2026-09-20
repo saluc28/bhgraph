@@ -79,9 +79,9 @@ func New(baseURL, tokenID, tokenKey string, opts ...Option) (*Client, error) {
 
 // Get issues a signed GET against an arbitrary path and returns the raw body.
 //
-// Get, Post and Put are exported because this library deliberately does not
-// wrap the whole BloodHound API: a caller who needs an endpoint we do not model
-// should not have to reimplement the signature to reach it.
+// Get, Post, Put and Delete are exported because this library deliberately does
+// not wrap the whole BloodHound API: a caller who needs an endpoint we do not
+// model should not have to reimplement the signature to reach it.
 func (c *Client) Get(ctx context.Context, path string) ([]byte, error) {
 	return c.do(ctx, "GET", path, nil)
 }
@@ -95,6 +95,18 @@ func (c *Client) Post(ctx context.Context, path string, body []byte) ([]byte, er
 // Put issues a signed PUT.
 func (c *Client) Put(ctx context.Context, path string, body []byte) ([]byte, error) {
 	return c.do(ctx, "PUT", path, body)
+}
+
+// Delete issues a signed DELETE and returns the raw body, which several
+// BloodHound endpoints leave empty.
+//
+// It is the other half of what a collector does. Saved queries are keyed by
+// name, so a query saved again under a new name is a second query rather than
+// the same one, and an extension installed under a name of its own outlives the
+// tool that installed it. Without this the owner clicks through the interface
+// to undo what a tool did.
+func (c *Client) Delete(ctx context.Context, path string) ([]byte, error) {
+	return c.do(ctx, "DELETE", path, nil)
 }
 
 // APIError reports a non-2xx response from BloodHound.
