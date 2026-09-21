@@ -192,4 +192,8 @@ If you hit one of these, an issue describing the actual case is more useful than
 
 ## License
 
-Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).
+Apache-2.0. See [LICENSE](LICENSE).
+
+The one third-party file here is `testdata/golden/mssqlhound-schema.json`, and where it comes
+from is recorded [next to it](testdata/golden/README.md). The signature vectors in
+`client/sign_test.go` say in the file itself how they were produced.

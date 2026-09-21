@@ -5,6 +5,15 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Removed
+
+- `NOTICE`. Apache-2.0 requires propagating a notice an upstream project ships, and
+  neither of the two third-party things here comes with one. Where they come from is
+  recorded next to them instead, in `testdata/golden/README.md` and in
+  `client/sign_test.go`.
+
 ## [0.4.0] - 2026-09-20
 
 ### Added
